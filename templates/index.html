@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreadLoop | Give Every Garment a Next Life</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f2;
+            color: #20352b;
+        }
+
+        header {
+            background: #173d30;
+            color: white;
+            padding: 22px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        header span {
+            color: #a8e6b0;
+        }
+
+        .hero {
+            padding: 65px 8%;
+            background: #e1efdf;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px #0000000d;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #216345;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail {
+            background: #f0f6ee;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .detail p {
+            margin-bottom: 0;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .action {
+            padding: 20px;
+            border: 1px solid #d5e6d4;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .action h3 {
+            margin-top: 5px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #d8f3dc;
+            color: #205c37;
+            padding: 8px 13px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            background: #173d30;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            header {
+                padding: 18px 5%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">♻ Thread<span>Loop</span></div>
+        <nav style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><a href="/rewards" style="color:#c8f0cf;text-decoration:none;font-weight:bold">🏅 Rewards</a><div>Garment Passport</div></nav>
+    </header>
+
+    <section class="hero">
+        <h1>Give Every Garment a Next Life.</h1>
+        <p>
+            Discover what your clothes are made of and find
+            a better next step for them.
+        </p>
+        <span class="tag">Repair · Reuse · Recycle</span>
+    </section>
+
+    <main class="container">
+        <section class="card">
+            <h2>👕 Your Garment Passport</h2>
+
+            <div style="text-align: center; margin: 25px;">
+                <h3>Scan Your Garment Passport</h3>
+                <img
+                    src="/qr.png"
+                    alt="ThreadLoop QR Code"
+                    width="180"
+                >
+                <p>Scan to explore this garment's passport.</p>
+            </div>
+            
+            <p>Example garment details for our first prototype.</p>
+
+            <div class="details">
+                <div class="detail">
+                    <strong>Garment ID</strong>
+                    <p>TL-1001</p>
+                </div>
+
+                <div class="detail">
+                    <strong>Garment</strong>
+                    <p>Cotton T-shirt</p>
+                </div>
+
+                <div class="detail">
+                    <strong>Material</strong>
+                    <p>100% cotton</p>
+                </div>
+
+                <div class="detail">
+                    <strong>Care instructions</strong>
+                    <p>Wash gently in cold water.</p>
+                </div>
+            </div>
+
+            <p><span class="tag">Sample data — not verified</span></p>
+        </section>
+
+        <section class="card">
+            <h2>🌱 Give Your Garment a Next Life</h2>
+            <p>Choose a possible next step for your garment.</p>
+
+            <div class="actions">
+                <div class="action">
+                    <h3>🧵 Repair</h3>
+                    <p>Fix it and use it longer.</p>
+                </div>
+
+                <div class="action">
+                    <h3>🛍️ Resale</h3>
+                    <p>Pass it on to another user.</p>
+                </div>
+
+                <div class="action">
+                    <h3>💚 Donation</h3>
+                    <p>Give wearable clothes to others.</p>
+                </div>
+
+                <div class="action">
+                    <h3>♻️ Recycling</h3>
+                    <p>Find a suitable textile recycler.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        ThreadLoop — Making clothing circular, one garment at a time.
+    </footer>
+</body>
+</html>

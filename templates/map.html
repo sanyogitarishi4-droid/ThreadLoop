@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThreadLoop | Smart Garment Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root{--green:#176244;--deep:#173d30;--mint:#e6f3e7;--bg:#f4f7f2;--muted:#68786d;--line:#dce7dc;--white:#fff}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:#24392e;font-family:Arial,Helvetica,sans-serif}
+    header{background:var(--deep);color:white;padding:17px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    header h1{font-size:22px;margin:0}header a{color:#fff;text-decoration:none;font-weight:700}
+    main{width:min(1180px,92%);margin:26px auto 40px}.intro h2{font-size:clamp(24px,3vw,32px);margin:0 0 8px}.intro p{color:var(--muted);line-height:1.6;margin:0 0 20px}
+    .search-panel{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;background:white;border:1px solid var(--line);padding:16px;border-radius:16px;box-shadow:0 4px 18px #173d3009}
+    label{display:block;font-weight:700;font-size:13px;margin-bottom:7px}.field{position:relative;z-index:2;min-width:0}.field input{display:block;position:relative;z-index:3;width:100%;min-width:0;padding:13px;border:1px solid #cbd9cd;border-radius:10px;background:white;color:#24392e;font-size:15px;pointer-events:auto;user-select:text;-webkit-user-select:text;cursor:text;opacity:1}
+    input:focus{outline:3px solid #b9dec5;border-color:var(--green)}button{border:0;border-radius:10px;padding:14px 19px;background:var(--green);color:white;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}button:disabled{opacity:.6;cursor:wait}
+    .hint{font-size:12px;color:var(--muted);margin-top:6px}.status{min-height:24px;color:var(--muted);line-height:1.5;margin:14px 2px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:16px;align-items:stretch}
+    .map-card,.list-card{background:white;border:1px solid var(--line);border-radius:16px;overflow:hidden}.map-head{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}.map-head strong{font-size:15px}.map-head span{font-size:12px;color:var(--muted)}#map{height:500px;width:100%;background:#edf2ec}
+    .list-card{padding:16px}.list-card h3{margin:0 0 12px;font-size:18px}.results{display:grid;gap:10px;max-height:500px;overflow:auto}.empty{border:1px dashed var(--line);background:#fafcf9;padding:17px;border-radius:12px;color:var(--muted);font-size:14px;line-height:1.55}
+    .place{border:1px solid var(--line);padding:13px;border-radius:12px}.place h4{margin:7px 0;font-size:15px}.tag{display:inline-block;background:var(--mint);color:var(--green);font-size:11px;font-weight:700;padding:5px 8px;border-radius:30px}.place p{font-size:13px;color:var(--muted);line-height:1.5;margin:6px 0}.place a{display:inline-block;color:var(--green);font-size:13px;font-weight:700;text-decoration:none;margin-top:5px}.place a:hover{text-decoration:underline}
+    .notice{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px}.leaflet-control-attribution{font-size:10px!important}
+    @media(max-width:760px){main{width:94%;margin-top:20px}.search-panel{grid-template-columns:1fr}.search-panel button{width:100%}.layout{grid-template-columns:1fr}#map{height:380px}.results{max-height:none}}
+  </style>
+</head>
+<body>
+  <header><h1>🌿 ThreadLoop</h1><a href="/">← Back to Home</a></header>
+  <main>
+    <section class="intro"><h2>Find the right next step for your garment</h2><p>Enter a city and choose what you want to do. The map will show only matching location leads to keep it clear and easy to read.</p></section>
+    <form id="searchForm" class="search-panel">
+      <div class="field"><label for="nearbyLocationInput">1. Nearby location / city</label><input id="nearbyLocationInput" name="nearby_location" type="text" inputmode="text" placeholder="Type a city or nearby location, e.g. Aligarh, India" autocomplete="off" autocapitalize="words" spellcheck="false" required maxlength="150"><div class="hint">Type the city or area yourself. This is a normal text box.</div></div>
+      <div class="field"><label for="actionInput">2. What do you want to do?</label><input id="actionInput" name="action" type="text" list="actionChoices" placeholder="Type recycle, reuse, or resell" required maxlength="30" autocomplete="off"><datalist id="actionChoices"><option value="Recycle"><option value="Reuse"><option value="Resell"></datalist><div class="hint">Choose or type: Recycle, Reuse, or Resell.</div></div>
+      <button id="searchButton" type="submit">Find matching centres</button>
+    </form>
+    <p id="status" class="status" role="status" aria-live="polite">Enter a city and garment action, then select Find matching centres.</p>
+    <section class="layout">
+      <div class="map-card"><div class="map-head"><strong>Matching locations</strong><span id="mapCount">No results yet</span></div><div id="map" aria-label="Map showing only matching garment service locations"></div></div>
+      <aside class="list-card"><h3>Places to explore</h3><div id="results" class="results"><div class="empty">Your matching recycling, reuse, or resale leads will appear here.</div></div><p class="notice">Map data comes from OpenStreetMap and may be incomplete or outdated. These are suggestions, not verified ThreadLoop partners. Contact a location before visiting to confirm that it accepts your garment or offers the service you need.</p></aside>
+    </section>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map', { zoomControl: true }).setView([22.9734, 78.6569], 5);
+    // A quiet basemap keeps roads and geography subdued; only matching service markers are added.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 20
+    }).addTo(map);
+    const cityInput = document.getElementById('nearbyLocationInput');
+    const actionInput = document.getElementById('actionInput');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+    const searchButton = document.getElementById('searchButton');
+    const mapCount = document.getElementById('mapCount');
+    // Keep the nearby-location field as a plain editable text input. Typing never triggers a search by itself.
+    cityInput.addEventListener('input', () => {
+      if (cityInput.value.trim()) statusEl.textContent = 'Nearby location entered: ' + cityInput.value.trim() + '. Choose an action and press Find matching centres.';
+    });
+    let markerLayer = L.layerGroup().addTo(map);
+    let searchMarker = null;
+
+    function safe(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+    function normalizeAction(value) {
+      const v = value.trim().toLowerCase();
+      if (['recycle','recycling'].includes(v)) return 'recycle';
+      if (['reuse','repair','donate'].includes(v)) return 'reuse';
+      if (['resell','resale','sell'].includes(v)) return 'resell';
+      return null;
+    }
+    async function geocodeCity(city) {
+      const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=' + encodeURIComponent(city);
+      const response = await fetch(url, {headers:{'Accept':'application/json'}});
+      if (!response.ok) throw new Error('City search is temporarily unavailable. Please try again.');
+      const data = await response.json();
+      if (!data.length) throw new Error('City not found. Check the spelling or add the country name, e.g. Aligarh, India.');
+      return {lat:Number(data[0].lat), lon:Number(data[0].lon), name:data[0].display_name};
+    }
+    function overpassQuery(lat, lon, action) {
+      // Limit results to a 10 km radius around the selected city centre.
+      const around = '(around:10000,' + lat + ',' + lon + ')';
+      let filters = [];
+      if (action === 'recycle') {
+        filters = [
+          `nwr${around}["recycling:clothes"="yes"];`, `nwr${around}["recycling:clothing"="yes"];`,
+          `nwr${around}["amenity"="recycling"]["recycling:clothes"~"yes|only"];`,
+          `nwr${around}["amenity"="recycling"]["recycling:clothing"~"yes|only"];`
+        ];
+      } else if (action === 'reuse') {
+        filters = [
+          `nwr${around}["shop"="second_hand"];`, `nwr${around}["shop"="charity"];`,
+          `nwr${around}["shop"="tailor"];`, `nwr${around}["craft"="tailor"];`,
+          `nwr${around}["shop"="sewing"];`
+        ];
+      } else {
+        // Only second-hand and charity shops are shown as resale leads; ordinary clothing stores are excluded.
+        filters = [`nwr${around}["shop"="second_hand"];`, `nwr${around}["shop"="charity"];`];
+      }
+      return '[out:json][timeout:25];(' + filters.join('') + ');out center tags;';
+    }
+    async function loadPlaces(lat, lon, action) {
+      const query = overpassQuery(lat, lon, action);
+      const endpoints = ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+      let lastError;
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint, {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query)});
+          if (!response.ok) throw new Error('The map data service is busy. Please retry in a moment.');
+          const data = await response.json();
+          return data.elements || [];
+        } catch (err) { lastError = err; }
+      }
+      throw lastError || new Error('Could not load map locations.');
+    }
+    function getCoords(el) {
+      if (el.type === 'node' && Number.isFinite(el.lat) && Number.isFinite(el.lon)) return {lat:el.lat,lon:el.lon};
+      if (el.center && Number.isFinite(el.center.lat) && Number.isFinite(el.center.lon)) return {lat:el.center.lat,lon:el.center.lon};
+      return null;
+    }
+    function classify(tags, action) {
+      if (action === 'recycle') return {label:'Textile recycling lead',note:'The map lists a textile recycling tag. Confirm accepted materials and opening hours.'};
+      if (action === 'reuse') {
+        if (tags.shop === 'tailor' || tags.craft === 'tailor' || tags.shop === 'sewing') return {label:'Repair / alteration lead',note:'Contact the tailor to confirm garment repair or alteration services.'};
+        if (tags.shop === 'charity') return {label:'Donation / reuse lead',note:'Ask whether clean clothing donations are accepted.'};
+        return {label:'Second-hand / reuse shop',note:'Ask whether the shop accepts or sells the type of garment you have.'};
+      }
+      return {label:'Resale lead',note:'Mapped as a second-hand or charity shop; confirm whether it buys or accepts garments for resale.'};
+    }
+    function renderPlaces(elements, center, action) {
+      markerLayer.clearLayers();
+      if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
+      const seen = new Set(), places = [];
+      for (const el of elements) {
+        const tags = el.tags || {}, coords = getCoords(el);
+        if (!coords) continue;
+        const key = coords.lat.toFixed(5)+','+coords.lon.toFixed(5);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        places.push({name:tags.name || tags.brand || tags.operator || 'Unnamed mapped location',lat:coords.lat,lon:coords.lon,
+          address:[tags['addr:street'],tags['addr:suburb'],tags['addr:city']].filter(Boolean).join(', '),classification:classify(tags,action)});
+      }
+      places.forEach(place => {
+        const marker = L.circleMarker([place.lat,place.lon],{radius:7,color:'#176244',weight:2,fillColor:'#5cba84',fillOpacity:.95})
+          .bindPopup('<strong>'+safe(place.name)+'</strong><br>'+safe(place.classification.label));
+        marker.addTo(markerLayer);
+      });
+      if (places.length) {
+        map.fitBounds(L.featureGroup(markerLayer.getLayers()).getBounds().pad(.18),{maxZoom:14});
+      } else {
+        map.setView([center.lat,center.lon],12);
+      }
+      mapCount.textContent = places.length + (places.length === 1 ? ' location' : ' locations');
+      resultsEl.innerHTML = '';
+      if (!places.length) {
+        resultsEl.innerHTML = '<div class="empty">No matching places were found in the mapped data near this city. This does not prove that no such service exists. Try a nearby city or search again later.</div>';
+        statusEl.textContent = 'No matching '+action+' locations found near '+cityInput.value.trim()+'.';
+        return;
+      }
+      places.forEach(place => {
+        const card = document.createElement('article'); card.className='place';
+        const directions='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(place.lat+','+place.lon);
+        card.innerHTML='<span class="tag">'+safe(place.classification.label)+'</span><h4>'+safe(place.name)+'</h4><p><strong>Address:</strong> '+safe(place.address || 'Address not listed')+'</p><p>'+safe(place.classification.note)+'</p><a href="'+directions+'" target="_blank" rel="noopener noreferrer">Get directions ↗</a>';
+        resultsEl.appendChild(card);
+      });
+      statusEl.textContent = 'Showing '+places.length+' matching '+action+' location(s) near '+cityInput.value.trim()+'. Only matching service markers are shown.';
+    }
+    document.getElementById('searchForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const city=cityInput.value.trim(), action=normalizeAction(actionInput.value);
+      if (!city) { statusEl.textContent='Please enter a city.'; cityInput.focus(); return; }
+      if (!action) { statusEl.textContent='Please type Recycle, Reuse, or Resell in the second box.'; actionInput.focus(); return; }
+      searchButton.disabled=true; searchButton.textContent='Searching…'; statusEl.textContent='Finding the city and matching locations…';
+      try { const center=await geocodeCity(city); statusEl.textContent='Searching '+action+' locations near '+city+'…'; const elements=await loadPlaces(center.lat,center.lon,action); renderPlaces(elements,center,action); }
+      catch(err) { markerLayer.clearLayers(); mapCount.textContent='Search unavailable'; resultsEl.innerHTML='<div class="empty">'+safe(err.message || 'Could not complete the search. Please try again.')+'</div>'; statusEl.textContent=err.message || 'Search failed. Please try again.'; }
+      finally { searchButton.disabled=false; searchButton.textContent='Find matching centres'; }
+    });
+    [cityInput, actionInput].forEach(input => input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); document.getElementById('searchForm').requestSubmit(); }
+    }));
+  </script>
+</body>
+</html>
