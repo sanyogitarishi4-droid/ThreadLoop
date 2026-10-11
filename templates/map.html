@@ -42,7 +42,7 @@
   <script>
     const map = L.map('map', { zoomControl: true }).setView([22.9734, 78.6569], 5);
     // A quiet basemap keeps roads and geography subdued; only matching service markers are added.
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 20
     }).addTo(map);
     const cityInput = document.getElementById('nearbyLocationInput');
